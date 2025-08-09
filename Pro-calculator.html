@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ProCalc — Premium Calculator Suite</title>
+  <meta name="description" content="ProCalc — Premium, colorful calculators (BMI, Age, EMI, Calorie, Percentage). Fast, responsive & client-side — no backend required." />
+  <meta name="keywords" content="BMI calculator, age calculator, EMI, calorie estimator, percentage calculator, online calculators, procalc" />
+  <meta name="ankit" content="ProCalc" />
+
+  <!-- FONTS -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- THEME & RESET ---------- */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.18), transparent 8%),
+                  radial-gradient(900px 500px at 90% 90%, rgba(6,182,212,0.14), transparent 10%),
+                  linear-gradient(180deg,#071027 0%, #07132a 100%);
+      color: #e6f0fb;
+      padding:32px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .wrap {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 28px;
+      align-items:start;
+    }
+    @media (max-width: 980px) {
+      .wrap { grid-template-columns: 1fr; padding: 12px; gap:18px; }
+    }
+
+    /* ---------- HEADER ---------- */
+    header.app-header{
+      grid-column: 1 / -1;
+      display:flex;align-items:center;gap:16px;justify-content:space-between;
+      margin-bottom:6px;
+    }
+    .brand {
+      display:flex;gap:12px;align-items:center;
+    }
+    .logo {
+      width:64px;height:64px;border-radius:14px;
+      background: linear-gradient(135deg,#7c3aed,#06b6d4);
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;
+      color:white;box-shadow:0 10px 30px rgba(6,11,25,0.6);
+    }
+    .brand h1{margin:0;font-size:20px}
+    .brand p{margin:0;color:rgba(230,240,251,0.7);font-size:13px}
+
+    /* ---------- MAIN PANEL ---------- */
+    .panel {
+      background: rgba(255,255,255,0.03);
+      border-radius:16px;
+      padding:18px;
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 12px 40px rgba(3,6,18,0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    /* tools grid */
+    .tools-grid {
+      display:grid;
+      grid-template-columns: repeat(3,1fr);
+      gap:14px;
+    }
+    @media (max-width:900px){ .tools-grid{ grid-template-columns: repeat(2,1fr) } }
+    @media (max-width:560px){ .tools-grid{ grid-template-columns: 1fr } }
+
+    .tool-card{
+      padding:14px;border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.03);
+      display:flex;flex-direction:column;gap:8px;cursor:pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .tool-card:hover{ transform: translateY(-6px); box-shadow: 0 14px 36px rgba(5,8,20,0.55); }
+
+    .tool-top{display:flex;align-items:center;gap:12px}
+    .tool-ico{
+      width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;
+      background: linear-gradient(135deg,#0f1724,#1e293b); font-size:20px;
+    }
+    .tool-ico.bmi{background:linear-gradient(135deg,#ff7a18,#ffb199)}
+    .tool-ico.age{background:linear-gradient(135deg,#06b6d4,#60a5fa)}
+    .tool-ico.emi{background:linear-gradient(135deg,#7c3aed,#0ea5a3)}
+    .tool-ico.cal{background:linear-gradient(135deg,#f97316,#f59e0b)}
+    .tool-ico.pct{background:linear-gradient(135deg,#06d6a0,#118ab2)}
+
+    .tool-title{font-weight:700;margin:0;font-size:15px}
+    .tool-desc{margin:0;font-size:13px;color:rgba(230,240,251,0.7)}
+
+    /* active area */
+    .active-area{ margin-top:16px; display:grid; grid-template-columns: 1fr; gap:16px; }
+    .card{
+      border-radius:12px;padding:16px;background:linear-gradient(180deg, rgba(12,17,29,0.6), rgba(8,12,20,0.35));
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .card .head { display:flex;align-items:center;gap:12px; }
+    .card h2{margin:0;font-size:18px}
+    .help{font-size:13px;color:rgba(230,240,251,0.7);margin-top:6px}
+
+    .form-row{ display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
+    .field{ flex:1; min-width:140px; display:flex; flex-direction:column; gap:8px; }
+    label{ font-size:13px; color:rgba(230,240,251,0.78); }
+    input[type="number"], input[type="date"], select {
+      border-radius:10px; padding:10px 12px; border:1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color: #e6f0fb; outline:none; font-size:14px;
+    }
+    input::placeholder{ color: rgba(230,240,251,0.45) }
+
+    /* big action row */
+    .actions{ display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
+    .btn{
+      padding:12px 16px; border-radius:12px; border:none; font-weight:700; cursor:pointer; font-size:14px;
+      display:inline-flex; align-items:center; gap:10px;
+      box-shadow: 0 8px 26px rgba(7,10,20,0.45);
+    }
+    .btn.primary{ background: linear-gradient(90deg,#7c3aed,#06b6d4); color:white; }
+    .btn.ghost{ background:transparent;border:1px solid rgba(255,255,255,0.06); color:rgba(230,240,251,0.9) }
+    .btn.warn{ background: linear-gradient(90deg,#fb923c,#f97316); color:white; }
+
+    /* result panel */
+    .result {
+      margin-top:12px; padding:14px; border-radius:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border:1px solid rgba(255,255,255,0.03);
+      font-weight:600;
+      color: #e6f0fb;
+    }
+    .result.good{ box-shadow: 0 8px 30px rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.12); }
+    .result.warn{ box-shadow: 0 8px 30px rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.12); }
+    .result.bad{ box-shadow: 0 8px 30px rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.12); }
+
+    /* aside right column */
+    .aside{
+      display:flex;flex-direction:column;gap:16px;
+      position:sticky; top:32px;
+    }
+    .adbox{
+      border-radius:12px;padding:14px;min-height:140px;display:flex;align-items:center;justify-content:center;
+      background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px dashed rgba(255,255,255,0.04);
+      color:rgba(230,240,251,0.7); text-align:center;
+    }
+    .tip{ padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); color:rgba(230,240,251,0.85) }
+
+    footer.foot{ grid-column:1 / -1; margin-top:8px; text-align:center; color:rgba(230,240,251,0.6); font-size:13px }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo">PC</div>
+        <div>
+          <h1>ProCalc</h1>
+          <p>Premium calculators — fast, colorful & client-side</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center">
+        <a href="#" style="text-decoration:none;color:rgba(230,240,251,0.85);font-weight:600;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)">Get pro</a>
+      </div>
+    </header>
+
+    <!-- MAIN PANEL (left) -->
+    <main class="panel">
+      <div class="tools-grid" role="tablist" aria-label="Calculators">
+        <div class="tool-card" data-tool="bmi" tabindex="0">
+          <div class="tool-top">
+            <div class="tool-ico bmi">⚖️</div>
+            <div>
+              <p class="tool-title">BMI Calculator</p>
+              <p class="tool-desc">Calculate BMI & healthy weight range</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-card" data-tool="age" tabindex="0">
+          <div class="tool-top">
+            <div class="tool-ico age">🎂</div>
+            <div>
+              <p class="tool-title">Age Calculator</p>
+              <p class="tool-desc">Exact years, months & days from DOB</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-card" data-tool="emi" tabindex="0">
+          <div class="tool-top">
+            <div class="tool-ico emi">🏦</div>
+            <div>
+              <p class="tool-title">EMI Calculator</p>
+              <p class="tool-desc">Monthly EMI & total interest</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-card" data-tool="calorie" tabindex="0">
+          <div class="tool-top">
+            <div class="tool-ico cal">🔥</div>
+            <div>
+              <p class="tool-title">Calorie Estimator</p>
+              <p class="tool-desc">Mifflin–St Jeor + activity multipliers</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-card" data-tool="percent" tabindex="0">
+          <div class="tool-top">
+            <div class="tool-ico pct">📊</div>
+            <div>
+              <p class="tool-title">Percentage Tool</p>
+              <p class="tool-desc">3 easy percentage modes</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="active-area">
+
+        <!-- BMI Card -->
+        <section id="card-bmi" class="card" role="tabpanel">
+          <div class="head">
+            <h2>BMI Calculator</h2>
+            <div style="margin-left:auto;color:rgba(230,240,251,0.7)">Healthy BMI: 18.5 — 24.9</div>
+          </div>
+          <p class="help">Enter weight & height. You can use kg/cm or lb/in — converter included.</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Weight</label>
+              <div style="display:flex;gap:8px">
+                <input id="bmi_weight" type="number" placeholder="e.g., 72.5" min="1" step="0.1" />
+                <select id="bmi_weight_unit" aria-label="weight unit" style="width:120px">
+                  <option value="kg">kg</option>
+                  <option value="lb">lb</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Height</label>
+              <div style="display:flex;gap:8px">
+                <input id="bmi_height" type="number" placeholder="e.g., 172" min="30" step="0.1" />
+                <select id="bmi_height_unit" style="width:120px">
+                  <option value="cm">cm</option>
+                  <option value="in">in</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="bmi_calc_btn">Calculate BMI</button>
+            <button class="btn ghost" id="bmi_reset_btn">Reset</button>
+            <button class="btn" id="bmi_info_btn" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:rgba(230,240,251,0.9)">What this means</button>
+          </div>
+
+          <div id="bmi_result" class="result" style="display:none"></div>
+        </section>
+
+        <!-- AGE Card -->
+        <section id="card-age" class="card" role="tabpanel" style="display:none">
+          <div class="head"><h2>Age Calculator</h2><div style="margin-left:auto;color:rgba(230,240,251,0.7)">Exact Y / M / D</div></div>
+          <p class="help">Pick your date of birth. Use the date picker wheel to change year/month/day quickly.</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Date of Birth</label>
+              <input id="age_dob" type="date" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="age_calc_btn">Calculate Age</button>
+            <button class="btn ghost" id="age_reset_btn">Reset</button>
+          </div>
+
+          <div id="age_result" class="result" style="display:none"></div>
+        </section>
+
+        <!-- EMI Card -->
+        <section id="card-emi" class="card" role="tabpanel" style="display:none">
+          <div class="head"><h2>EMI Calculator</h2><div style="margin-left:auto;color:rgba(230,240,251,0.7)">Plan your loan</div></div>
+          <p class="help">Enter loan amount, annual interest rate (in %), and tenure in years.</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Loan amount</label>
+              <input id="emi_principal" type="number" placeholder="e.g., 500000" min="0" step="0.01" />
+            </div>
+            <div class="field">
+              <label>Annual Interest Rate (%)</label>
+              <input id="emi_rate" type="number" placeholder="e.g., 7.5" min="0" step="0.01" />
+            </div>
+            <div class="field">
+              <label>Tenure (years)</label>
+              <input id="emi_years" type="number" placeholder="e.g., 5" min="0" step="1" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="emi_calc_btn">Calculate EMI</button>
+            <button class="btn ghost" id="emi_reset_btn">Reset</button>
+          </div>
+
+          <div id="emi_result" class="result" style="display:none"></div>
+        </section>
+
+        <!-- CALORIE Card -->
+        <section id="card-calorie" class="card" role="tabpanel" style="display:none">
+          <div class="head"><h2>Calorie Estimator</h2><div style="margin-left:auto;color:rgba(230,240,251,0.7)">Mifflin–St Jeor formula</div></div>
+          <p class="help">Enter gender, age, weight (kg) and height (cm). Choose activity level for daily calories.</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Gender</label>
+              <select id="cal_gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other (use male formula)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Age (years)</label>
+              <input id="cal_age" type="number" placeholder="e.g., 28" min="10" step="1" />
+            </div>
+            <div class="field">
+              <label>Weight (kg)</label>
+              <input id="cal_weight" type="number" placeholder="e.g., 72.5" min="10" step="0.1" />
+            </div>
+            <div class="field">
+              <label>Height (cm)</label>
+              <input id="cal_height" type="number" placeholder="e.g., 172" min="50" step="0.1" />
+            </div>
+          </div>
+
+          <div style="margin-top:8px">
+            <label>Activity Level</label>
+            <select id="cal_activity" style="width:100%;border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.06);background:transparent">
+              <option value="1.2">Sedentary (little or no exercise)</option>
+              <option value="1.375">Lightly active (1–3 days/week)</option>
+              <option value="1.55">Moderately active (3–5 days/week)</option>
+              <option value="1.725">Very active (6–7 days/week)</option>
+              <option value="1.9">Extra active (hard daily exercise)</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="cal_calc_btn">Estimate Calories</button>
+            <button class="btn ghost" id="cal_reset_btn">Reset</button>
+          </div>
+
+          <div id="cal_result" class="result" style="display:none"></div>
+        </section>
+
+        <!-- PERCENT Card -->
+        <section id="card-percent" class="card" role="tabpanel" style="display:none">
+          <div class="head"><h2>Percentage Tool</h2><div style="margin-left:auto;color:rgba(230,240,251,0.7)">Clear modes for every use-case</div></div>
+          <p class="help">Choose a mode and enter the two values. Examples shown in placeholder.</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Mode</label>
+              <select id="pct_mode">
+                <option value="xPercentOfY">Find X% of Y (e.g., 20% of 400)</option>
+                <option value="whatPercentXofY">What % is X of Y (e.g., 80 of 200)</option>
+                <option value="changePercent">Percentage change (increase/decrease) (e.g., 120 → 150)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label id="pct_label_a">Value A (X)</label>
+              <input id="pct_a" type="number" placeholder="e.g., 20 (or 80 or 120)" step="0.01" />
+            </div>
+
+            <div class="field">
+              <label id="pct_label_b">Value B (Y)</label>
+              <input id="pct_b" type="number" placeholder="e.g., 400 (or 200 or 150)" step="0.01" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="pct_calc_btn">Calculate</button>
+            <button class="btn ghost" id="pct_reset_btn">Reset</button>
+          </div>
+
+          <div id="pct_result" class="result" style="display:none"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- ASIDE (right) -->
+    <aside class="aside">
+      <div class="adbox">
+        <!-- Replace with AdSense code -->
+        <div>Ad Space — insert Google AdSense code here</div>
+      </div>
+
+      <div class="tip card">
+        <strong>Pro tips</strong>
+        <ul style="margin:8px 0 0 18px; padding:0; color:rgba(230,240,251,0.78); font-size:13px">
+          <li>Use BMI to track long-term changes, not day-to-day.</li>
+          <li>EMI shows monthly payment — compare different tenures before borrowing.</li>
+          <li>Calorie estimate is starting point — consult a professional for personalized diet.</li>
+        </ul>
+      </div>
+
+      <div class="tip card" style="text-align:center">
+        © <span id="yr"></span> ProCalc — Built for growth
+      </div>
+    </aside>
+
+    <footer class="foot">Fast • SEO-ready • Client-side — No backend required</footer>
+  </div>
+
+  <!-- ---------- SCRIPTS ---------- -->
+  <script>
+    // Helper: show/hide panels
+    const toolCards = document.querySelectorAll('.tool-card');
+    const panels = {
+      bmi: document.getElementById('card-bmi'),
+      age: document.getElementById('card-age'),
+      emi: document.getElementById('card-emi'),
+      calorie: document.getElementById('card-calorie'),
+      percent: document.getElementById('card-percent')
+    };
+    function showPanel(key){
+      Object.values(panels).forEach(p => p.style.display = 'none');
+      panels[key].style.display = 'block';
+      // scroll into view on mobile
+      panels[key].scrollIntoView({behavior:'smooth', block:'center'});
+    }
+    toolCards.forEach(card => {
+      card.addEventListener('click', ()=> showPanel(card.dataset.tool));
+      card.addEventListener('keydown', e => { if(e.key === 'Enter') showPanel(card.dataset.tool); });
+    });
+
+    // Default open BMI
+    showPanel('bmi');
+
+    // set year
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    /* ---------- BMI LOGIC ---------- */
+    const toFixedSafe = (v, dp=1) => Math.round(v * Math.pow(10, dp)) / Math.pow(10, dp);
+
+    document.getElementById('bmi_calc_btn').addEventListener('click', ()=>{
+      const w = parseFloat(document.getElementById('bmi_weight').value);
+      const h = parseFloat(document.getElementById('bmi_height').value);
+      const wu = document.getElementById('bmi_weight_unit').value;
+      const hu = document.getElementById('bmi_height_unit').value;
+      const resEl = document.getElementById('bmi_result');
+
+      if (!w || !h){ alert('Please enter valid weight and height.'); return; }
+
+      // convert to kg and meters
+      let kg = wu === 'lb' ? w * 0.45359237 : w;
+      let meters = hu === 'in' ? h * 0.0254 : (h / 100);
+
+      // BMI
+      const bmi = kg / (meters * meters);
+      const bmiRounded = toFixedSafe(bmi,1);
+
+      // healthy weight range for BMI 18.5 - 24.9 (in kg)
+      const minWeight = 18.5 * meters * meters;
+      const maxWeight = 24.9 * meters * meters;
+
+      const minKg = toFixedSafe(minWeight,1);
+      const maxKg = toFixedSafe(maxWeight,1);
+
+      let cls=''; let msg='';
+      if (bmi < 18.5) { cls='warn'; msg='Underweight'; }
+      else if (bmi <= 24.9) { cls='good'; msg='Normal weight'; }
+      else if (bmi <= 29.9) { cls='warn'; msg='Overweight'; }
+      else { cls='bad'; msg='Obesity'; }
+
+      resEl.className = 'result ' + cls;
+      resEl.style.display = 'block';
+      resEl.innerHTML = `<div style="font-size:16px">BMI: <strong>${bmiRounded}</strong> — ${msg}</div>
+                         <div style="margin-top:8px;color:rgba(230,240,251,0.85)">Healthy weight range for your height: <strong>${minKg} kg</strong> — <strong>${maxKg} kg</strong></div>
+                         <div style="margin-top:8px;font-size:13px;color:rgba(230,240,251,0.75)">If you prefer imperial units: ideal weight range is <strong>${toFixedSafe(minKg/0.45359237,1)} lb</strong> — <strong>${toFixedSafe(maxKg/0.45359237,1)} lb</strong>.</div>`;
+    });
+
+    document.getElementById('bmi_reset_btn').addEventListener('click', ()=>{
+      document.getElementById('bmi_weight').value=''; document.getElementById('bmi_height').value='';
+      document.getElementById('bmi_result').style.display='none';
+    });
+
+    /* ---------- AGE LOGIC ---------- */
+    document.getElementById('age_calc_btn').addEventListener('click', ()=>{
+      const dobVal = document.getElementById('age_dob').value;
+      const resEl = document.getElementById('age_result');
+      if (!dobVal){ alert('Please select your date of birth.'); return; }
+
+      const dob = new Date(dobVal);
+      const now = new Date();
+
+      if (dob > now){ alert('DOB cannot be in the future.'); return; }
+
+      let years = now.getFullYear() - dob.getFullYear();
+      let months = now.getMonth() - dob.getMonth();
+      let days = now.getDate() - dob.getDate();
+
+      if (days < 0){
+        // borrow days from previous month
+        const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        days += prevMonth.getDate();
+        months -= 1;
+      }
+      if (months < 0){
+        months += 12;
+        years -= 1;
+      }
+
+      resEl.className = 'result';
+      resEl.style.display='block';
+      resEl.innerHTML = `<div style="font-size:16px">You are <strong>${years}</strong> years, <strong>${months}</strong> months, and <strong>${days}</strong> days old.</div>
+                         <div style="margin-top:8px;color:rgba(230,240,251,0.78)">Born on: <strong>${dob.toDateString()}</strong></div>`;
+    });
+
+    document.getElementById('age_reset_btn').addEventListener('click', ()=>{
+      document.getElementById('age_dob').value=''; document.getElementById('age_result').style.display='none';
+    });
+
+    /* ---------- EMI LOGIC ---------- */
+    document.getElementById('emi_calc_btn').addEventListener('click', ()=>{
+      const P = parseFloat(document.getElementById('emi_principal').value);
+      const annualRate = parseFloat(document.getElementById('emi_rate').value);
+      const years = parseFloat(document.getElementById('emi_years').value);
+      const resEl = document.getElementById('emi_result');
+
+      if (!P || P <= 0 || isNaN(annualRate) || isNaN(years) || years <= 0){ alert('Please enter valid principal, rate and tenure.'); return; }
+
+      const r = (annualRate / 100) / 12; // monthly rate decimal
+      const n = Math.round(years * 12);
+
+      // EMI formula with careful math
+      const pow = Math.pow(1 + r, n);
+      const emi = (P * r * pow) / (pow - 1);
+      const emiRounded = Math.round(emi * 100) / 100;
+      const totalPayment = Math.round(emiRounded * n * 100) / 100;
+      const totalInterest = Math.round((totalPayment - P) * 100) / 100;
+
+      resEl.style.display='block';
+      resEl.className='result';
+      resEl.innerHTML = `<div style="font-size:16px">Monthly EMI: <strong>${emiRounded.toLocaleString()}</strong></div>
+                         <div style="margin-top:8px;color:rgba(230,240,251,0.8)">Total Payment: <strong>${totalPayment.toLocaleString()}</strong> | Total Interest: <strong>${totalInterest.toLocaleString()}</strong></div>`;
+    });
+
+    document.getElementById('emi_reset_btn').addEventListener('click', ()=>{
+      document.getElementById('emi_principal').value=''; document.getElementById('emi_rate').value=''; document.getElementById('emi_years').value=''; document.getElementById('emi_result').style.display='none';
+    });
+
+    /* ---------- CALORIE LOGIC (Mifflin-St Jeor) ---------- */
+    document.getElementById('cal_calc_btn').addEventListener('click', ()=>{
+      const gender = document.getElementById('cal_gender').value;
+      const age = parseFloat(document.getElementById('cal_age').value);
+      const weight = parseFloat(document.getElementById('cal_weight').value);
+      const height = parseFloat(document.getElementById('cal_height').value);
+      const activity = parseFloat(document.getElementById('cal_activity').value);
+      const resEl = document.getElementById('cal_result');
+
+      if (!age || !weight || !height){ alert('Please fill age, weight and height.'); return; }
+
+      // Mifflin-St Jeor
+      let bmr;
+      if (gender === 'female') bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      else bmr = 10 * weight + 6.25 * height - 5 * age + 5; // male & other use +5
+
+      const maintenance = Math.round(bmr * activity);
+      const lose = maintenance - 500; // approx
+      const gain = maintenance + 500;
+
+      resEl.style.display='block';
+      resEl.className='result';
+      resEl.innerHTML = `<div style="font-size:16px">BMR: <strong>${Math.round(bmr)}</strong> kcal/day</div>
+                         <div style="margin-top:8px;color:rgba(230,240,251,0.85)">Maintenance (activity x BMR): <strong>${maintenance}</strong> kcal/day</div>
+                         <div style="margin-top:6px;font-size:13px;color:rgba(230,240,251,0.75)">To lose ~0.5 kg/week: ~<strong>${lose}</strong> kcal/day | To gain ~0.5 kg/week: ~<strong>${gain}</strong> kcal/day</div>`;
+    });
+
+    document.getElementById('cal_reset_btn').addEventListener('click', ()=>{
+      document.getElementById('cal_gender').value='male'; document.getElementById('cal_age').value=''; document.getElementById('cal_weight').value=''; document.getElementById('cal_height').value=''; document.getElementById('cal_result').style.display='none';
+    });
+
+    /* ---------- PERCENTAGE LOGIC ---------- */
+    const pctMode = document.getElementById('pct_mode');
+    const pctLabelA = document.getElementById('pct_label_a');
+    const pctLabelB = document.getElementById('pct_label_b');
+    const pctA = document.getElementById('pct_a');
+    const pctB = document.getElementById('pct_b');
+    const pctResult = document.getElementById('pct_result');
+
+    function updatePctPlaceholders(){
+      const mode = pctMode.value;
+      if (mode === 'xPercentOfY'){
+        pctLabelA.textContent = 'X (percentage)';
+        pctLabelB.textContent = 'Y (value)';
+        pctA.placeholder = 'e.g., 20';
+        pctB.placeholder = 'e.g., 400';
+      } else if (mode === 'whatPercentXofY'){
+        pctLabelA.textContent = 'X (part)';
+        pctLabelB.textContent = 'Y (whole)';
+        pctA.placeholder = 'e.g., 80';
+        pctB.placeholder = 'e.g., 200';
+      } else if (mode === 'changePercent'){
+        pctLabelA.textContent = 'Original Value';
+        pctLabelB.textContent = 'New Value';
+        pctA.placeholder = 'e.g., 120';
+        pctB.placeholder = 'e.g., 150';
+      }
+    }
+    pctMode.addEventListener('change', updatePctPlaceholders);
+    updatePctPlaceholders();
+
+    document.getElementById('pct_calc_btn').addEventListener('click', ()=>{
+      const mode = pctMode.value;
+      const A = parseFloat(pctA.value);
+      const B = parseFloat(pctB.value);
+
+      if (isNaN(A) || isNaN(B)){ alert('Please enter both values'); return; }
+
+      let html = '';
+      if (mode === 'xPercentOfY'){
+        // X% of Y
+        const val = (A / 100) * B;
+        html = `${A}% of ${B} = <strong>${toFixedSafe(val,2)}</strong>`;
+      } else if (mode === 'whatPercentXofY'){
+        if (B === 0){ alert('Y cannot be zero'); return; }
+        const pct = (A / B) * 100;
+        html = `${A} is <strong>${toFixedSafe(pct,2)}%</strong> of ${B}`;
+      } else if (mode === 'changePercent'){
+        if (A === 0){ alert('Original value cannot be zero'); return; }
+        const change = ((B - A) / A) * 100;
+        const dir = change >= 0 ? 'increase' : 'decrease';
+        html = `Change: <strong>${toFixedSafe(Math.abs(change),2)}%</strong> (${dir}) — from ${A} to ${B}`;
+      }
+
+      pctResult.style.display='block';
+      pctResult.className='result';
+      pctResult.innerHTML = html;
+    });
+
+    document.getElementById('pct_reset_btn').addEventListener('click', ()=>{
+      pctA.value=''; pctB.value=''; pctResult.style.display='none';
+    });
+
+    /* ---------- Accessibility: keyboard nav ---------- */
+    // Allow tool-cards to be focused and activated via keyboard (already handled)
+
+    // End of script
+  </script>
+</body>
+</html>
